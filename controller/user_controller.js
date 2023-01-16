@@ -2,7 +2,7 @@ const User = require('../models/User')
 
 // render the profile page
 module.exports.profile = function (req, res) {
-    User.findById(req.params.id, function(err, user) {
+    User.findById(req.params.id, function (err, user) {
         return res.render('user_profile', {
             title: 'Profile',
             profile_user: user
@@ -10,9 +10,9 @@ module.exports.profile = function (req, res) {
     })
 }
 
-module.exports.update = function(req, res) {
-    if(req.user.id = req.params.id) {
-        User.findByIdAndUpdate(req.params.id, req.body, function(err, user) {
+module.exports.update = function (req, res) {
+    if (req.user.id = req.params.id) {
+        User.findByIdAndUpdate(req.params.id, req.body, function (err, user) {
             return res.redirect('back')
         })
     } else {
@@ -75,8 +75,8 @@ module.exports.createSession = function (req, res) {
 module.exports.destroySession = function (req, res, next) {
     // req.logout();
     // return res.redirect('/')
-    req.logout(function(err) {
+    req.logout(function (err) {
         if (err) { return next(err); }
         res.redirect('/');
-      });
+    });
 }
