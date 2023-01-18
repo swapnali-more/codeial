@@ -1,4 +1,6 @@
-const User = require('../models/User')
+const User = require('../models/User');
+const fs = require('fs');
+const path = require('path')
 
 // render the profile page
 module.exports.profile = function (req, res) {
@@ -10,12 +12,40 @@ module.exports.profile = function (req, res) {
     })
 }
 
-module.exports.update = function (req, res) {
+module.exports.update = async function (req, res) {
+    // if (req.user.id = req.params.id) {
+    //     User.findByIdAndUpdate(req.params.id, req.body, function (err, user) {
+    //         return res.redirect('back')
+    //     })
+    // } else {
+    //     return res.status(401).send('Unauthorized');
+    // }
     if (req.user.id = req.params.id) {
-        User.findByIdAndUpdate(req.params.id, req.body, function (err, user) {
+        try {
+           let user = await User.findById(req.params.id);
+           User.uploadedAvatar(req, res, function(err) {
+            if(err) {
+                console.log('Multer Error', err)
+            } 
+            user.name = req.body.name;
+            user.email = req.body.email;
+
+            if(req.file) {
+                if(user.avatar){
+                    fs.unlinkSync(path.join(__dirname, '..', user.avatar))
+                }
+                //this is the saving the path of the uploaded fiel into the avatar field in the user
+                user.avatar = User.avatarPath + '/' + req.file.filename
+            }
+            user.save();
             return res.redirect('back')
-        })
+           })
+        } catch (err) {
+            req.flash('error', err);
+            return res.redirect('back')
+        }
     } else {
+        req.flash('error', 'Unathorized!');
         return res.status(401).send('Unauthorized');
     }
 }
@@ -66,17 +96,20 @@ module.exports.create = function (req, res) {
     })
 }
 
-//get the sign in data
+//sign in and create a session for the user
 module.exports.createSession = function (req, res) {
+    req.flash('success', 'Logged In Successfully!')
     return res.redirect('/')
 }
 
 //get the sign out
 module.exports.destroySession = function (req, res, next) {
     // req.logout();
+    
     // return res.redirect('/')
     req.logout(function (err) {
         if (err) { return next(err); }
+        req.flash('success', 'You have logged out!')
         res.redirect('/');
     });
 }
